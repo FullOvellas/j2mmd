@@ -158,6 +158,9 @@ nix shell github:FullOvellas/j2mmd
   j2mmd mapper-usage -d /path/to/mappers -o ./flowchart.mmd
   ```
 - You can use the `help` subcommand on the base command or any subcommands to get more usage info
+  ```sh
+  j2mmd help mapper-usage
+  ```
 - If you want to use a Docker container, you will need to mount the directory with your source files:
   ```sh
   docker run --rm -v=/path/to/sources:/src j2mmd mapper-usage -d /src
