@@ -36,6 +36,9 @@ pub mod cli {
             /// Output file. Prints to standard output if left blank.
             #[arg(short, long, value_name = "OUTPUT")]
             output: Option<PathBuf>,
+            /// Print a top to bottom diagram instead of a left to right one.
+            #[arg(short, long)]
+            top_bottom: bool,
         },
     }
 }

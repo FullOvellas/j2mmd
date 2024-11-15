@@ -7,7 +7,11 @@ use j2mmd::{
 fn main() {
     let cli = Cli::parse();
     match cli.command {
-        Commands::MapperUsage { directory, output } => {
+        Commands::MapperUsage {
+            directory,
+            output,
+            top_bottom,
+        } => {
             let mut mappers = Vec::new();
             let mut independent_mapper_lines = Vec::new();
             get_mappers(directory.to_str().unwrap(), &mut mappers);
@@ -27,7 +31,8 @@ fn main() {
                 }
             }
             let diagram = format!(
-                "flowchart LR\n{}\n{}",
+                "flowchart {}\n{}\n{}",
+                if top_bottom { "TB" } else { "LR" },
                 body_lines,
                 independent_mapper_lines.join("\n")
             );

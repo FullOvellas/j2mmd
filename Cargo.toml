@@ -1,8 +1,8 @@
 [package]
 name = "j2mmd"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-license-file = "LICENSE"
+license-file = "LICENSE.txt"
 keywords = ["java", "documentation", "diagrams", "mermaid"]
 categories = ["command-line-utilities"]
 
