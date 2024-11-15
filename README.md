@@ -102,15 +102,11 @@ Docker container you also need Docker installed in your system.
 
 #### Docker
 
-1. Clone the project
-   ```sh
-   git clone https://github.com/FullOvellas/j2mmd.git
-   ```
-2. Build the image
-   ```sh
-   cd j2mmd
-   docker build -t j2mmd .
-   ```
+To get j2mmd with Docker you just need to pull the image:
+
+```sh
+docker pull fullovellas/j2mmd
+```
 
 #### NixOS
 
@@ -162,6 +158,10 @@ nix shell github:FullOvellas/j2mmd
   j2mmd mapper-usage -d /path/to/mappers -o ./flowchart.mmd
   ```
 - You can use the `help` subcommand on the base command or any subcommands to get more usage info
+- If you want to use a Docker container, you will need to mount the directory with your source files:
+  ```sh
+  docker run --rm -v=/path/to/sources:/src j2mmd mapper-usage -d /src
+  ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
