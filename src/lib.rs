@@ -5,6 +5,7 @@
 /// Contains the elements that will be diagramed.
 pub mod domain {
     /// Represents a single Mapstruct mapper with a list of the names of all other mappers it uses.
+    #[derive(PartialEq, Debug)]
     pub struct Mapper {
         pub name: String,
         pub used_sources: Vec<String>,
@@ -83,11 +84,11 @@ fn create_mapper(source: PathBuf) -> Mapper {
             .strip_suffix(".java")
             .unwrap()
             .to_string(),
-        used_sources: extract_used_sources(fs::read_to_string(source).unwrap()),
+        used_sources: extract_used_mappers(&fs::read_to_string(source).unwrap()),
     };
 }
 
-fn extract_used_sources(content: String) -> Vec<String> {
+fn extract_used_mappers(content: &str) -> Vec<String> {
     let content = COMMENT_TO_EOL_RE.replace_all(&content, "");
 
     if let Some(caps) = USED_MAPPERS_RE.captures(&content) {
@@ -110,4 +111,19 @@ fn extract_used_sources(content: String) -> Vec<String> {
     }
 
     Vec::new()
+}
+
+#[cfg(test)]
+mod tests {
+    use assert_unordered::assert_eq_unordered;
+
+    use crate::extract_used_mappers;
+
+    #[test]
+    fn extract_mappers_successfully() {
+        assert_eq_unordered!(
+            extract_used_mappers("@Mapper(uses = { AMapper.class, BMapper.class})"),
+            vec![String::from("AMapper"), String::from("BMapper")]
+        );
+    }
 }
