@@ -2,6 +2,7 @@
 
 - Added unit test module
 - Added integration test
+- Added parallelization for file processing
 
 ## 0.1.0 - 2024-11-15
 
