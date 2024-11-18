@@ -31,8 +31,7 @@ pub mod cli {
         /// Construct flowchart for mapper usage relationships.
         MapperUsage {
             /// Root directory for mapper usage analysis.
-            #[arg(short, long, default_value = PathBuf::from(".").into_os_string(),
-            value_name = "DIRECTORY")]
+            #[arg(short, long, default_value = ".", value_name = "DIRECTORY")]
             directory: PathBuf,
             /// Output file. Prints to standard output if left blank.
             #[arg(short, long, value_name = "OUTPUT")]
@@ -45,6 +44,7 @@ pub mod cli {
 }
 
 use domain::Mapper;
+use rayon::prelude::*;
 use regex::Regex;
 use std::{fs, path::PathBuf};
 
@@ -58,20 +58,32 @@ lazy_static! {
 
 /// Obtains a vector of mappers from the current directory recursively.
 pub fn get_mappers(path: &str, mappers: &mut Vec<Mapper>) {
-    for entry in fs::read_dir(path).unwrap().filter_map(|elmt| elmt.ok()) {
-        let path = entry.path();
-        if path.is_dir() {
-            get_mappers(path.to_str().unwrap(), mappers);
-        } else if path
-            .file_name()
+    mappers.par_extend(
+        fs::read_dir(path)
             .unwrap()
-            .to_str()
-            .unwrap()
-            .contains("Mapper")
-        {
-            mappers.push(create_mapper(path));
-        }
-    }
+            .par_bridge()
+            .filter_map(|elmt| elmt.ok())
+            .filter_map(|entry| {
+                let path = entry.path();
+                if path.is_dir() {
+                    let mut used_mappers = Vec::new();
+                    get_mappers(path.to_str().unwrap(), &mut used_mappers);
+                    Some(used_mappers)
+                } else if path
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .contains("Mapper")
+                {
+                    Some(vec![create_mapper(path)])
+                } else {
+                    None
+                }
+            })
+            .flatten()
+            .collect::<Vec<Mapper>>(),
+    );
 }
 
 fn create_mapper(source: PathBuf) -> Mapper {
@@ -96,21 +108,20 @@ fn extract_used_mappers(content: &str) -> Vec<String> {
             return list
                 .as_str()
                 .split(',')
-                .map(|s| s.trim().strip_suffix(".class").unwrap_or(s).to_string())
+                .map(|s| strip_class_suffix(s.trim()).to_string())
                 .collect();
         }
 
         if let Some(single) = caps.get(3) {
-            return vec![single
-                .as_str()
-                .trim()
-                .strip_suffix(".class")
-                .unwrap_or(single.as_str())
-                .to_string()];
+            return vec![strip_class_suffix(single.as_str().trim()).to_string()];
         }
     }
 
     Vec::new()
+}
+
+fn strip_class_suffix(name: &str) -> &str {
+    name.strip_suffix(".class").unwrap_or(name)
 }
 
 #[cfg(test)]
