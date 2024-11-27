@@ -1,0 +1,53 @@
+name: Generate documentation
+on:
+  push:
+    branches:
+      - '**'
+      #    paths:
+      #      - 'tests/test_data/mappers/**'
+jobs:
+  doc-writing:
+    name: Update docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get j2mmd image digest
+        run: |
+          IMAGE_DIGEST=$(docker manifest inspect fullovellas/j2mmd:latest | jq -r '.config.digest')
+          echo "Image digest is: $IMAGE_DIGEST"
+          echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> $GITHUB_ENV
+      - name: Ensure caching directory is present
+        run: mkdir -p /tmp/docker-cache
+      - name: Cache j2mmd image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-cache
+          key: ${{ runner.os }}-docker-${{ env.IMAGE_DIGEST }}
+      - name: Pull j2mmd image (if not cached)
+        run: |
+          if [ ! -f /tmp/docker-cache/image.tar ]; then
+            docker pull fullovellas/j2mmd:latest
+            docker save fullovellas/j2mmd:latest -o /tmp/docker-cache/image.tar
+          else
+            docker load -i /tmp/docker-cache/image.tar
+          fi
+      - name: Generate diagram
+        run: |
+          # Generate the Mermaid diagram content and clean up leading/trailing spaces
+          DIAGRAM_CONTENT=$(docker run --rm -v $GITHUB_WORKSPACE/tests/test_data/mappers:/src fullovellas/j2mmd mapper-usage -d /src)
+          # Remove unwanted leading/trailing whitespace from the Mermaid content
+          echo "DIAGRAM_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "$DIAGRAM_CONTENT" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Modify file content
+        uses: jaywcjlove/github-action-modify-file-content@main
+        with:
+          body: |
+            ```mermaid
+            ${{env.DIAGRAM_CONTENT}}
+            ```
+          path: docs/_media/diagrams/test-mappers.md
+          overwrite: 'true'
