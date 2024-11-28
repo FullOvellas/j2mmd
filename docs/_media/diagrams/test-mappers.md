@@ -1,6 +1,8 @@
 ```mermaid
 flowchart LR
-  a --> b
-  c --> b
-  b --> d
+OrderMapper --> ProductMapper
+OrderMapper --> AddressMapper
+UserMapper --> CustomerMapper
+CustomerMapper --> AddressMapper
+StandaloneMapper
 ```
