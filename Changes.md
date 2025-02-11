@@ -1,3 +1,7 @@
+## 0.3.0
+
+- Added flag for web viewer URL output
+
 ## 0.2.2 - 2024-11-18
 
 - Added unit test module

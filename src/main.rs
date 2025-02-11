@@ -1,4 +1,8 @@
+use std::io::{Read, Write};
+
+use base64::prelude::*;
 use clap::Parser;
+use flate2::write::ZlibEncoder;
 use j2mmd::{
     cli::{Cli, Commands},
     get_mappers,
@@ -11,6 +15,7 @@ fn main() {
             directory,
             output,
             top_bottom,
+            live_editor,
         } => {
             let mut mappers = Vec::new();
             let mut independent_mapper_lines = Vec::new();
@@ -38,8 +43,14 @@ fn main() {
             );
 
             if let Some(out_file) = output {
-                std::fs::write(out_file, diagram).expect("Error writing file");
-            } else {
+                std::fs::write(out_file, &diagram).expect("Error writing file");
+            } else if live_editor {
+                let mut encoder = ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+                let json_data = format!("{{ \"code\": \"{}\", \"mermaid\": {{ \"theme\": \"default\" }} }}", diagram.replace("\n", "\\n"));
+                let _ = encoder.write_all(json_data.as_bytes());
+                let encoded_diagram = encoder.finish().expect("Unable to compress diagram");
+                println!("https://mermaid.live/view#pako:{}", BASE64_STANDARD.encode(encoded_diagram));
+            }else {
                 println!("{diagram}");
             }
         }

@@ -39,6 +39,8 @@ pub mod cli {
             /// Print a top to bottom diagram instead of a left to right one.
             #[arg(short, long)]
             top_bottom: bool,
+            #[arg(short, long)]
+            live_editor: bool,
         },
     }
 }
