@@ -39,6 +39,9 @@ pub mod cli {
             /// Print a top to bottom diagram instead of a left to right one.
             #[arg(short, long)]
             top_bottom: bool,
+            /// Print a URL for viewing the resulting diagram in mermaid.live
+            #[arg(short, long)]
+            live_editor: bool,
         },
     }
 }
@@ -87,7 +90,7 @@ pub fn get_mappers(path: &str, mappers: &mut Vec<Mapper>) {
 }
 
 fn create_mapper(source: PathBuf) -> Mapper {
-    return Mapper {
+    Mapper {
         name: source
             .file_name()
             .unwrap()
@@ -97,11 +100,11 @@ fn create_mapper(source: PathBuf) -> Mapper {
             .unwrap()
             .to_string(),
         used_sources: extract_used_mappers(&fs::read_to_string(source).unwrap()),
-    };
+    }
 }
 
 fn extract_used_mappers(content: &str) -> Vec<String> {
-    let content = COMMENT_TO_EOL_RE.replace_all(&content, "");
+    let content = COMMENT_TO_EOL_RE.replace_all(content, "");
 
     if let Some(caps) = USED_MAPPERS_RE.captures(&content) {
         if let Some(list) = caps.get(2) {
