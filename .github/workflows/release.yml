@@ -61,8 +61,9 @@ jobs:
           target: ${{ matrix.platform.target }}
           toolchain: ${{ matrix.toolchain }}
           args:
-            "--locked --release"
+            "--release"
           strip: true
+          use-rust-cache: false
       - name: Run tests
         uses: houseabsolute/actions-rust-cross@v0
         with:
@@ -70,7 +71,8 @@ jobs:
           target: ${{ matrix.platform.target }}
           toolchain: ${{ matrix.toolchain }}
           args:
-            "--locked --release"
+            "--release"
+          use-rust-cache: false
         if: ${{ !matrix.platform.skip_tests }}
       - name: Publish artifacts and release
         uses: houseabsolute/actions-rust-release@v0
