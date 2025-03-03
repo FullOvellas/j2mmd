@@ -16,15 +16,17 @@ fn main() {
             output,
             top_bottom,
             live_editor,
+            flat,
         } => {
             let mut mappers = Vec::new();
             let mut independent_mapper_lines = Vec::new();
             get_mappers(directory.to_str().unwrap(), &mut mappers);
             let mut body_lines = Vec::new();
+            let indentation = if flat { "" } else { "  " };
 
             for mapper in &mappers {
                 for used in &mapper.used_sources {
-                    body_lines.push(format!("  {} --> {}", mapper.name, used));
+                    body_lines.push(format!("{}{} --> {}", indentation, mapper.name, used));
                 }
             }
             let body_lines = body_lines.join("\n");
@@ -32,7 +34,7 @@ fn main() {
             // Add the mappers that don't have any dependencies to the diagram lines
             for mapper in mappers {
                 if !body_lines.contains(&mapper.name) {
-                    independent_mapper_lines.push(format!("  {}", mapper.name));
+                    independent_mapper_lines.push(format!("{}{}", indentation, mapper.name));
                 }
             }
             let diagram = format!(
@@ -46,11 +48,17 @@ fn main() {
                 std::fs::write(out_file, &diagram).expect("Error writing file");
             } else if live_editor {
                 let mut encoder = ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-                let json_data = format!("{{ \"code\": \"{}\", \"mermaid\": {{ \"theme\": \"default\" }} }}", diagram.replace("\n", "\\n"));
+                let json_data = format!(
+                    "{{ \"code\": \"{}\", \"mermaid\": {{ \"theme\": \"default\" }} }}",
+                    diagram.replace("\n", "\\n")
+                );
                 let _ = encoder.write_all(json_data.as_bytes());
                 let encoded_diagram = encoder.finish().expect("Unable to compress diagram");
-                println!("https://mermaid.live/view#pako:{}", BASE64_STANDARD.encode(encoded_diagram));
-            }else {
+                println!(
+                    "https://mermaid.live/view#pako:{}",
+                    BASE64_STANDARD.encode(encoded_diagram)
+                );
+            } else {
                 println!("{diagram}");
             }
         }

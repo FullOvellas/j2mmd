@@ -1,3 +1,7 @@
+## 0.4.0 2025-03-03
+
+- Added flag for printing diagram without indentation
+
 ## 0.3.0
 
 - Added flag for web viewer URL output

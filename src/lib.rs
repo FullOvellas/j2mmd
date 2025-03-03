@@ -42,6 +42,9 @@ pub mod cli {
             /// Print a URL for viewing the resulting diagram in mermaid.live
             #[arg(short, long)]
             live_editor: bool,
+            /// Print the diagram code without indentation
+            #[arg(short, long)]
+            flat: bool,
         },
     }
 }
